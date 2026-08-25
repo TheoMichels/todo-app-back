@@ -6,6 +6,7 @@ import java.util.UUID;
 
 public record TrackingPointResponse(
         UUID id,
+        UUID sectionId,
         String title,
         String status,
         String nextStep,
@@ -16,6 +17,7 @@ public record TrackingPointResponse(
     static TrackingPointResponse from(TrackingPoint point) {
         return new TrackingPointResponse(
                 point.getId(),
+                point.getSectionId(),
                 point.getTitle(),
                 point.getStatus(),
                 point.getNextStep(),

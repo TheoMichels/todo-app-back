@@ -1,6 +1,7 @@
 package com.todo.todoappback.trackingpoint;
 
 import com.todo.todoappback.common.ResourceNotFoundException;
+import com.todo.todoappback.section.SectionRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -12,17 +13,29 @@ import java.util.UUID;
 public class TrackingPointService {
 
     private final TrackingPointRepository trackingPointRepository;
+    private final SectionRepository sectionRepository;
 
-    public TrackingPointService(TrackingPointRepository trackingPointRepository) {
+    public TrackingPointService(
+            TrackingPointRepository trackingPointRepository,
+            SectionRepository sectionRepository
+    ) {
         this.trackingPointRepository = trackingPointRepository;
+        this.sectionRepository = sectionRepository;
     }
 
-    public List<TrackingPoint> findAll() {
+    public List<TrackingPoint> find(UUID sectionId) {
+        if (sectionId != null) {
+            return trackingPointRepository.findBySectionId(sectionId);
+        }
         return trackingPointRepository.findAll();
     }
 
     public TrackingPoint create(TrackingPointCreateRequest request) {
+        if (!sectionRepository.existsById(request.sectionId())) {
+            throw new ResourceNotFoundException("Section introuvable");
+        }
         TrackingPoint point = new TrackingPoint(
+                request.sectionId(),
                 request.title().trim(),
                 request.status(),
                 request.nextStep(),

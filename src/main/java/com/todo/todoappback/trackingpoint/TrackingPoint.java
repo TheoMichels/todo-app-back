@@ -18,6 +18,13 @@ public class TrackingPoint {
     @GeneratedValue
     private UUID id;
 
+    // Nullable at the DB level on purpose: enforcing NOT NULL here would fail
+    // the schema update against rows that predate this field. Every write path
+    // (create) requires it via request validation instead; TrackingPointMigration
+    // backfills any pre-existing null rows into a real section on startup.
+    @Column(name = "section_id")
+    private UUID sectionId;
+
     @Column(nullable = false)
     private String title;
 
@@ -35,7 +42,8 @@ public class TrackingPoint {
     protected TrackingPoint() {
     }
 
-    public TrackingPoint(String title, String status, String nextStep, LocalDate nextDueDate) {
+    public TrackingPoint(UUID sectionId, String title, String status, String nextStep, LocalDate nextDueDate) {
+        this.sectionId = sectionId;
         this.title = title;
         this.status = status == null ? "" : status;
         this.nextStep = nextStep == null ? "" : nextStep;
@@ -45,6 +53,14 @@ public class TrackingPoint {
 
     public UUID getId() {
         return id;
+    }
+
+    public UUID getSectionId() {
+        return sectionId;
+    }
+
+    public void setSectionId(UUID sectionId) {
+        this.sectionId = sectionId;
     }
 
     public String getTitle() {
