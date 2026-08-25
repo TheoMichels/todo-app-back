@@ -84,6 +84,10 @@ public class TodoService {
         todoRepository.deleteById(todoId);
     }
 
+    public void deleteAll(List<UUID> todoIds) {
+        todoRepository.deleteAllByIdInBatch(todoIds);
+    }
+
     private Priority parsePriority(String value) {
         try {
             return Priority.valueOf(value.toUpperCase());

@@ -57,4 +57,10 @@ public class TodoController {
     public void delete(@PathVariable UUID todoId) {
         todoService.delete(todoId);
     }
+
+    @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAll(@org.springframework.web.bind.annotation.RequestBody List<UUID> ids) {
+        todoService.deleteAll(ids);
+    }
 }
