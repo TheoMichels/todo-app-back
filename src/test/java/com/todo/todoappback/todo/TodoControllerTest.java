@@ -103,6 +103,63 @@ class TodoControllerTest {
     }
 
     @Test
+    void patchUpdatesTitlePriorityAndDueDate() throws Exception {
+        String sectionId = createSection("Général");
+        String created = mockMvc.perform(post("/todos")
+                        .contentType("application/json")
+                        .content("{\"sectionId\":\"" + sectionId + "\",\"title\":\"Initial\"}"))
+                .andReturn().getResponse().getContentAsString();
+        String todoId = objectMapper.readTree(created).get("id").asText();
+
+        mockMvc.perform(patch("/todos/" + todoId)
+                        .contentType("application/json")
+                        .content("{\"title\":\"  Titre MAJ  \",\"priority\":\"URGENT\",\"dueDate\":\"2026-12-31\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Titre MAJ"))
+                .andExpect(jsonPath("$.priority").value("urgent"))
+                .andExpect(jsonPath("$.dueDate").value("2026-12-31"));
+    }
+
+    @Test
+    void patchRejectsBlankTitle() throws Exception {
+        String sectionId = createSection("Général");
+        String created = mockMvc.perform(post("/todos")
+                        .contentType("application/json")
+                        .content("{\"sectionId\":\"" + sectionId + "\",\"title\":\"Quelque chose\"}"))
+                .andReturn().getResponse().getContentAsString();
+        String todoId = objectMapper.readTree(created).get("id").asText();
+
+        mockMvc.perform(patch("/todos/" + todoId)
+                        .contentType("application/json")
+                        .content("{\"title\":\"   \"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void patchRejectsInvalidPriority() throws Exception {
+        String sectionId = createSection("Général");
+        String created = mockMvc.perform(post("/todos")
+                        .contentType("application/json")
+                        .content("{\"sectionId\":\"" + sectionId + "\",\"title\":\"Quelque chose\"}"))
+                .andReturn().getResponse().getContentAsString();
+        String todoId = objectMapper.readTree(created).get("id").asText();
+
+        mockMvc.perform(patch("/todos/" + todoId)
+                        .contentType("application/json")
+                        .content("{\"priority\":\"CRITICAL\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void patchOnUnknownTodoReturns404() throws Exception {
+        String randomTodoId = "00000000-0000-0000-0000-000000000000";
+        mockMvc.perform(patch("/todos/" + randomTodoId)
+                        .contentType("application/json")
+                        .content("{\"done\":true}"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void deleteRemovesTodoForGood() throws Exception {
         String sectionId = createSection("Général");
         String created = mockMvc.perform(post("/todos")
